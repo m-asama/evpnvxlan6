@@ -1984,7 +1984,7 @@ index e883033..e65785d 100644
 +		if (RTA_PAYLOAD(tb[NDA_DST]) == IPV4_MAX_BYTELEN) {
 +			SET_IPADDR_V4(&vtep_ip);
 +			memcpy(&vtep_ip.ipaddr_v4, RTA_DATA(tb[NDA_DST]), IPV4_MAX_BYTELEN);
-+		} else if (RTA_PAYLOAD(tb[NDA_DST]) == IPV4_MAX_BYTELEN) {
++		} else if (RTA_PAYLOAD(tb[NDA_DST]) == IPV6_MAX_BYTELEN) {
 +			SET_IPADDR_V6(&vtep_ip);
 +			memcpy(&vtep_ip.ipaddr_v6, RTA_DATA(tb[NDA_DST]), IPV6_MAX_BYTELEN);
 +		} else {
