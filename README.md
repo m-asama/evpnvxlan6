@@ -28,7 +28,7 @@
 FRRouting の EVPN/VXLAN はデータセンターでの利用しか想定していないためか IPv6 で利用することができないようでした。
 そこでとりあえず以下のような修正を行い IPv6 でも利用できるよう改造しました。
 
-+ [frr_8.4.4-1.1ubuntu6.2+evpnvxlan6.1_amd64.patch](frr_8.4.4-1.1ubuntu6.2+evpnvxlan6.1_amd64.patch)
++ [frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3_amd64.patch](frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3_amd64.patch)
 
 但し EVPN/VXLAN で L2 VPN をする際に必要となる必要最低限の機能しかテストしていません。
 
@@ -147,7 +147,9 @@ EVPN を用いるために `/etc/frr/daemons` を bgpd が起動するよう修�
 ```
 router bgp 64512
  neighbor 2001:db8:0:2::11 remote-as internal
+ neighbor 2001:db8:0:2::11 update-source network 2001:db8:0:1::11
  neighbor 2001:db8:0:3::11 remote-as internal
+ neighbor 2001:db8:0:3::11 update-source network 2001:db8:0:1::11
  !
  address-family ipv6 unicast
   network 2001:db8:0:1::11/128
@@ -159,6 +161,12 @@ router bgp 64512
   advertise-all-vni
  exit-address-family
 exit
+```
+
+あとよくわかりませんが以下のコマンドを入れないと BGP のパケットが一切出て行かない場合があるようです。
+
+```
+ipv6 nht resolve-via-default
 ```
 
 その上で、例えば tnp3s0 が WAN 側(フレッツの閉域 IPv6 網に接続された側)で、 tnp4s0 が LAN 側(L2 VPN を延伸したい側)で、延伸したい VNI が 550 の場合、以下のような設定を行います。

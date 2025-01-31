@@ -1774,10 +1774,10 @@ index 57a859c..0ebdd49 100644
  	} else {
  		frrtrace(1, frr_bgp, evpn_local_vni_del_zrecv, vni);
 diff --git a/bgpd/bgpd.h b/bgpd/bgpd.h
-index f6162f3..ef7ae98 100644
+index 56c5b7b..59065cd 100644
 --- a/bgpd/bgpd.h
 +++ b/bgpd/bgpd.h
-@@ -694,7 +694,7 @@ struct bgp {
+@@ -695,7 +695,7 @@ struct bgp {
  	struct ethaddr rmac;
  
  	/* originator ip - to be used as NH for type-5 routes */
@@ -1959,7 +1959,7 @@ index d8a22d2..f91ac61 100644
  extern int kernel_upd_mac_nhg(uint32_t nhg_id, uint32_t nh_cnt,
  		struct nh_grp *nh_ids);
 diff --git a/zebra/rt_netlink.c b/zebra/rt_netlink.c
-index e883033..e65785d 100644
+index e883033..976cd2f 100644
 --- a/zebra/rt_netlink.c
 +++ b/zebra/rt_netlink.c
 @@ -3340,7 +3340,7 @@ static int netlink_macfdb_change(struct nlmsghdr *h, int len, ns_id_t ns_id)
