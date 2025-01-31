@@ -147,9 +147,9 @@ EVPN を用いるために `/etc/frr/daemons` を bgpd が起動するよう修�
 ```
 router bgp 64512
  neighbor 2001:db8:0:2::11 remote-as internal
- neighbor 2001:db8:0:2::11 update-source network 2001:db8:0:1::11
+ neighbor 2001:db8:0:2::11 update-source 2001:db8:0:1::11
  neighbor 2001:db8:0:3::11 remote-as internal
- neighbor 2001:db8:0:3::11 update-source network 2001:db8:0:1::11
+ neighbor 2001:db8:0:3::11 update-source 2001:db8:0:1::11
  !
  address-family ipv6 unicast
   network 2001:db8:0:1::11/128
