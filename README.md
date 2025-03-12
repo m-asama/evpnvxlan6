@@ -83,6 +83,10 @@ DPDK アプリで VXLAN を処理させたい時は [ここ](https://www.ginzado
 でもその前に DPDK アプリが必要とする dpdk 関連の deb パッケージをインストールする必要があります。
 `apt install dpdk` を実行しそれらをインストールしてから gdp をインストールしてください。
 
+dpdk パッケージに加え、使いたい NIC の PMD(Poll Mode Driver) もインストールする必要があります。
+Ubuntu では `librte-net-(NIC 名)24` といった名前で PMD のパッケージが用意されています。
+例えば Intel の igc ドライバで動作する NIC を利用したいときは `apt install librte-net-igc24` で igc 用の PMD をインストールしておきます。
+
 gdp をインストールすると `/etc/default/gdp` というファイルができるのでこちらを編集します。
 `/etc/default/gdp` はデフォルトで以下のような内容になっています。
 
