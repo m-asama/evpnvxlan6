@@ -28,7 +28,7 @@
 FRRouting の EVPN/VXLAN はデータセンターでの利用しか想定していないためか IPv6 で利用することができないようでした。
 そこでとりあえず以下のような修正を行い IPv6 でも利用できるよう改造しました。
 
-+ [frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3_amd64.patch](frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3_amd64.patch)
++ [frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3.patch](frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3.patch)
 
 但し EVPN/VXLAN で L2 VPN をする際に必要となる必要最低限の機能しかテストしていません。
 
@@ -51,7 +51,7 @@ Linux カーネルの方は同じ VNI の VXLAN インターフェースを IPv4
 
 今回はこちらをそのまま利用させていただきました。
 
-+ [linux_6.8.0-51.52+evpnvxlan6.1_amd64.patch](linux_6.8.0-51.52+evpnvxlan6.1_amd64.patch)
++ [linux_6.8.0-55.57+evpnvxlan6.2.patch](linux_6.8.0-55.57+evpnvxlan6.2.patch)
 
 ただ、こちらの対応は次で紹介する DPDK を用いたデータプレーンを用いる場合は必須ではないかもしれません。
 今回実装した DPDK を用いたデータプレーンはフラグメントに対応しており、それで処理されるパケットに関しては Linux カーネルを通らないためです。
@@ -76,7 +76,7 @@ DPDK アプリが自身で処理することができず Linux カーネル側�
 ## 使い方
 
 Linux カーネル側で VXLAN のフラグメントに対応させたい時は [ここ](https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/) にある Linux カーネルの deb パッケージをインストールしそれで起動します。
-もしくは自力で [linux_6.8.0-51.52+evpnvxlan6.1_amd64.patch](linux_6.8.0-51.52+evpnvxlan6.1_amd64.patch) を適用した Linux カーネル deb パッケージを作成しそれをインストールします。
+もしくは自力で [linux_6.8.0-55.57+evpnvxlan6.2.patch](linux_6.8.0-55.57+evpnvxlan6.2.patch) を適用した Linux カーネル deb パッケージを作成しそれをインストールします。
 
 DPDK アプリで VXLAN を処理させたい時は [ここ](https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/) にある gdp という名前の deb パッケージをインストールします。
 
