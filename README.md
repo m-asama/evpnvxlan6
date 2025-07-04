@@ -15,6 +15,28 @@ Linux カーネルで処理した場合と独自 DPDK アプリで処理した�
 
 Interop25 で展示した資料は [Interop25 発表資料](#interop25) をご覧ください。
 
+## リンク集
+
+### <a id="benchmarks"></a>ベンチマーク試験結果
++ **リンク**: [./bench/](./bench/)
++ **説明**: Linux カーネルで処理した場合と独自 DPDK アプリで処理した場合の転送性能の詳細な比較結果。PPS (Packets Per Second) と BPS (Bits Per Second) の性能グラフ、消費電力の測定結果を含む。
+
+### <a id="interop25"></a>Interop25 発表資料
++ **リンク**: [./interop25_m-asama.pdf](./interop25_m-asama.pdf)
++ **説明**: Interop25 で展示した際の発表資料。IPv6 EVPN/VXLAN の概要と実装内容について説明。
+
+### <a id="vxlan-fragmentation"></a>VXLAN fragmentation 対応についての解説記事
++ **リンク**: [https://www.cuteip.net/posts/2024/04/09/cuteip-updates-5-vxlan2-dkms/](https://www.cuteip.net/posts/2024/04/09/cuteip-updates-5-vxlan2-dkms/)
++ **説明**: Linux カーネルの VXLAN 実装におけるフラグメント処理の課題と対応方法について詳しく解説された記事。本プロジェクトの Linux カーネルパッチの参考にさせていただいた。
+
+### <a id="package-distribution"></a>パッケージ配布サイト
++ **リンク**: [https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/](https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/)
++ **説明**: 本プロジェクトで作成したパッケージの配布サイト。修正版 Linux カーネル、DPDK アプリ (gdp)、修正版 FRRouting の各 deb パッケージを提供。
+
+### <a id="frrouting-evpn-docs"></a>FRRouting EVPN 公式ドキュメント
++ **リンク**: [https://docs.frrouting.org/en/latest/evpn.html](https://docs.frrouting.org/en/latest/evpn.html)
++ **説明**: FRRouting の EVPN 機能に関する公式ドキュメント。設定方法やコマンドの詳細な説明が記載されている。
+
 ## 簡単な説明
 
 フレッツの閉域 IPv6 網で EVPN/VXLAN できたら便利じゃないですか。
@@ -273,25 +295,3 @@ DPDK アプリのソースコードを一般に公開することは現時点で
 みてみたいという方は X の DM ででも連絡ください。
 
 何かおかしな動きをするのに気づいた方はここでイシューをあげていただければ可能であれば対応すると思います。
-
-## リンク集
-
-### <a id="benchmarks"></a>ベンチマーク試験結果
-+ **リンク**: [./bench/](./bench/)
-+ **説明**: Linux カーネルで処理した場合と独自 DPDK アプリで処理した場合の転送性能の詳細な比較結果。PPS (Packets Per Second) と BPS (Bits Per Second) の性能グラフ、消費電力の測定結果を含む。
-
-### <a id="interop25"></a>Interop25 発表資料
-+ **リンク**: [./interop25_m-asama.pdf](./interop25_m-asama.pdf)
-+ **説明**: Interop25 で展示した際の発表資料。IPv6 EVPN/VXLAN の概要と実装内容について説明。
-
-### <a id="vxlan-fragmentation"></a>VXLAN fragmentation 対応についての解説記事
-+ **リンク**: [https://www.cuteip.net/posts/2024/04/09/cuteip-updates-5-vxlan2-dkms/](https://www.cuteip.net/posts/2024/04/09/cuteip-updates-5-vxlan2-dkms/)
-+ **説明**: Linux カーネルの VXLAN 実装におけるフラグメント処理の課題と対応方法について詳しく解説された記事。本プロジェクトの Linux カーネルパッチの参考にさせていただいた。
-
-### <a id="package-distribution"></a>パッケージ配布サイト
-+ **リンク**: [https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/](https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/)
-+ **説明**: 本プロジェクトで作成したパッケージの配布サイト。修正版 Linux カーネル、DPDK アプリ (gdp)、修正版 FRRouting の各 deb パッケージを提供。
-
-### <a id="frrouting-evpn-docs"></a>FRRouting EVPN 公式ドキュメント
-+ **リンク**: [https://docs.frrouting.org/en/latest/evpn.html](https://docs.frrouting.org/en/latest/evpn.html)
-+ **説明**: FRRouting の EVPN 機能に関する公式ドキュメント。設定方法やコマンドの詳細な説明が記載されている。
