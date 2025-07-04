@@ -104,10 +104,16 @@ DPDK アプリが自身で処理することができず Linux カーネル側�
 
 ## 使い方
 
+### Linux カーネルのインストール
+
 Linux カーネル側で VXLAN のフラグメントに対応させたい時は [パッケージ配布サイト](#package-distribution) にある Linux カーネルの deb パッケージをインストールしそれで起動します。
 もしくは自力で [linux_6.8.0-55.57+evpnvxlan6.2.patch](linux_6.8.0-55.57+evpnvxlan6.2.patch) を適用した Linux カーネル deb パッケージを作成しそれをインストールします。
 
+### DPDK アプリケーションのセットアップ
+
 DPDK アプリで VXLAN を処理させたい時は [パッケージ配布サイト](#package-distribution) にある gdp という名前の deb パッケージをインストールします。
+
+#### 依存パッケージのインストール
 
 ただし、その前に DPDK アプリが必要とする dpdk 関連の deb パッケージをインストールする必要があります。
 `apt install dpdk` を実行しそれらをインストールしてから gdp をインストールしてください。
@@ -115,6 +121,8 @@ DPDK アプリで VXLAN を処理させたい時は [パッケージ配布サイ
 dpdk パッケージに加え、使いたい NIC の PMD(Poll Mode Driver) もインストールする必要があります。
 Ubuntu では `librte-net-(NIC 名)24` といった名前で PMD のパッケージが用意されています。
 例えば Intel の igc ドライバで動作する NIC を利用したいときは `apt install librte-net-igc24` で igc 用の PMD をインストールしておきます。
+
+#### DPDK アプリケーションの設定
 
 gdp をインストールすると `/etc/default/gdp` というファイルができるのでこちらを編集します。
 `/etc/default/gdp` はデフォルトで以下のような内容になっています。
@@ -169,8 +177,12 @@ gdp アプリは起動すると PCI アドレスから名前を考え仮想 NIC 
 
 `systemctl enable gdp.service` で起動時に gdp を起動するよう設定してから再起動することで DPDK アプリが使えるようになります。
 
+### FRRouting のインストールと設定
+
 最後に FRRouting の deb パッケージを [パッケージ配布サイト](#package-distribution) にあるものに差し替えます。
 一旦 `apt install frr` で公式の frr とその依存 deb パッケージをインストールしてから `dpkg -i` で差し替えるのが簡単だと思います。
+
+#### EVPN デーモンの有効化
 
 EVPN を用いるために `/etc/frr/daemons` を bgpd が起動するよう修正します。
 `bgpd=no` となっている箇所を `bgpd=yes` に書き換えます。
@@ -196,11 +208,15 @@ router bgp 64512
 exit
 ```
 
+#### BGP 設定の追加設定
+
 また、以下のコマンドを設定しないと BGP のパケットが送信されない場合があるようです。
 
 ```
 ipv6 nht resolve-via-default
 ```
+
+### ネットワークインターフェースの設定
 
 その上で、例えば tnp3s0 が WAN 側(フレッツの閉域 IPv6 網に接続された側)で、 tnp4s0 が LAN 側(L2 VPN を延伸したい側)で、延伸したい VNI が 550 の場合、以下のような設定を行います。
 
@@ -222,6 +238,8 @@ ip link set tnp4s0 master br50
 (WAN 側のインターフェースである tnp3s0 はすでに設定されているものとしています。)
 
 FRRouting の詳しい設定は [FRRouting EVPN 公式ドキュメント](#frrouting-evpn-docs) を参照してください。
+
+### 動作確認
 
 正常に動作すればこのような結果になります。
 
