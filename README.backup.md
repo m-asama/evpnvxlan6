@@ -1,6 +1,6 @@
 <!-- README.backup.md - 最初のオリジナルバックアップ -->
 
-**他のバージョン**: [詳細版](README.detail.md) | [簡素化版](README.simpler.md)
+**他のバージョン**: [詳細版](README.detail.md) | [簡素化版](README.simpler.md) | **English**: [Original](README.backup.en.md) | [Detail](README.detail.en.md) | [Simple](README.simpler.en.md)
 
 # フレッツの閉域 IPv6 網で EVPN/VXLAN
 

@@ -1,6 +1,6 @@
 <!-- README.detail.en.md - English version of the detailed README -->
 
-**Other versions**: [Original](README.backup.md) | [Detail](README.detail.md) | [Simple](README.simpler.md) | [EN Original](README.backup.en.md) | [EN Detail](README.detail.en.md) | [EN Simple](README.simpler.en.md)
+**Other versions**: [Original](README.backup.en.md) | [Simple](README.simpler.en.md) | **日本語**: [オリジナル版](README.backup.md) | [詳細版](README.detail.md) | [簡素化版](README.simpler.md)
 
 # FRR Patch for IPv6 EVPN/VXLAN
 
