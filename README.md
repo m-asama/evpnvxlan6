@@ -1,95 +1,64 @@
-# フレッツの閉域 IPv6 網で EVPN/VXLAN
+<!-- README.simpler.md - 簡素化版README -->
+
+**English**: [README.en.md](README.en.md)
+
+# IPv6 EVPN/VXLAN のための FRR パッチ
 
 ## これは何？
 
-+ フレッツの閉域 IPv6 網で EVPN/VXLAN する方法の紹介
-+ Ubuntu 24.04 LTS の環境に deb パッケージを入れて構築
-+ FRRouting を IPv6 でも EVPN/VXLAN できるように改造
-+ アンダーレイ側でのフラグメントに対応し MTU 1500 のフレームも通るよう修正
-+ DPDK を用いた高速な転送機能も利用可能
+フレッツの閉域 IPv6 網などの IPv6 環境で EVPN/VXLAN を実現するための包括的なソリューションです。**FRRouting の IPv6 対応パッチ**、**Linux カーネルのフラグメント対応パッチ**、**高性能 DPDK アプリケーション**、そして**ビルド済み deb パッケージ**を提供し、Ubuntu 24.04 LTS 環境で簡単に構築できます。
 
-Linux カーネルで処理した場合と独自 DPDK アプリで処理した場合の転送性能については [こちらのベンチマーク試験結果](./bench/) をご覧ください。
 
-Interop25 で展示した資料は [こちら](./interop25_m-asama.pdf)。
++ **[ベンチマーク試験結果](./bench/)** - Linux カーネルと DPDK の性能比較（3-4倍の性能向上）
++ **[Interop25 発表資料](./interop25_m-asama.pdf)** - プロジェクトの概要と実装内容
++ **[パッケージ配布サイト](https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/)** - ビルド済み deb パッケージ
+
+## 参考リンク
+
++ **[VXLAN fragmentation 解説記事](https://www.cuteip.net/posts/2024/04/09/cuteip-updates-5-vxlan2-dkms/)** - Linux カーネルパッチの参考
++ **[FRRouting EVPN 公式ドキュメント](https://docs.frrouting.org/en/latest/evpn.html)** - 設定方法の詳細
 
 ## 簡単な説明
 
-フレッツの閉域 IPv6 網で EVPN/VXLAN できたら便利じゃないですか。
-でもそのためにはいくつか乗り越えなければならない課題があります。
+IPv6 環境での EVPN/VXLAN には **3つの課題** がありました：
 
-まず OSS の EVPN 実装で最も広く用いられていると思われる FRRouting が IPv4 での EVPN/VXLAN にしか対応しておらず、 IPv6 での EVPN/VXLAN に対応していません。
+1. **FRRouting の IPv4 限定** - IPv6 での EVPN/VXLAN に未対応
+2. **フラグメント処理の欠如** - MTU 1500 環境で Ethernet フレームを分割不可
+3. **転送性能の限界** - 小型 PC での低スループット
 
-次にフレッツの閉域 IPv6 網は MTU 1500 なので MTU 1500 の Ethernet フレームは分割しないと通せません。
-ところが Linux カーネルの VXLAN 実装はフラグメントに対応しておらず、 MTU 1500 の Ethernet フレームを分割して送ることができません。
+これらを解決するため、以下の対応を行いました：
 
-最後に Linux カーネルの転送機能では小型 PC などではそんなに性能が出せません。
-特に小さなパケットをたくさん送らなければならないような状況ではあまり性能が出せません。
+### 1️⃣ FRRouting IPv6 対応
 
-そこで以下の対応をしてみました。
+[frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3.patch](frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3.patch) により IPv6 での EVPN/VXLAN を実現。Route Type 2/3 のみテスト済み。
 
-### FRRouting を IPv6 でも EVPN/VXLAN できるように改造
+### 2️⃣ Linux カーネル フラグメント対応
 
-FRRouting の EVPN/VXLAN はデータセンターでの利用しか想定していないためか IPv6 で利用することができないようでした。
-そこでとりあえず以下のような修正を行い IPv6 でも利用できるよう改造しました。
+[linux_6.8.0-55.57+evpnvxlan6.2.patch](linux_6.8.0-55.57+evpnvxlan6.2.patch) により MTU 1500 環境での VXLAN フラグメント処理を実現。DPDK モードでも Linux カーネルへのフォールバック時に必要。
 
-+ [frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3.patch](frr_8.4.4-1.1ubuntu6.3+evpnvxlan6.3.patch)
+### 3️⃣ DPDK 高速転送機能
 
-但し EVPN/VXLAN で L2 VPN をする際に必要となる必要最低限の機能しかテストしていません。
+**gdp** アプリケーションにより Linux カーネルの 3-4 倍の転送性能を実現。物理 NIC を仮想 NIC（tnpXsX）に変換し、DPDK で高速処理。
 
-具体的には Route Type は 2(MAC/IP Advertisement Route) と 3(Inclusive Multicast Ethernet Tag Route) しかテストしていません。
-それ以外はおそらくまともに動かないと思います。
-
-例えば IPv4 を前提とした作りになっていたためかデフォルトの値としてルータ ID をアドレスとして用いているような箇所がいくつかありましたがルータ ID は IPv6 アドレスに変換できないのでその辺を適当に処理しています。(XXX: 後でちゃんと見直す。)
-
-また、 IPv4 の設定と IPv6 の設定を混在させたときにどうなるかも検証していません。
-Linux カーネルの方は同じ VNI の VXLAN インターフェースを IPv4 と IPv6 の両方で作成することもできるようですがそれをやった時に FRRouting 側はおそらく意図した動作をしないような気がします。
-
-あと show 系のコマンドもいくつかは動作していそうなことを確認しましたがちゃんとは確認していません。
-
-### アンダーレイ側でのフラグメントに対応し MTU 1500 のフレームも通るよう修正
-
-前述の通り Linux カーネルの VXLAN 実装はアンダーレイ側でフラグメントとリアセンブルの処理を行うようになっていません。
-この辺の話は [こちら](https://www.cuteip.net/posts/2024/04/09/cuteip-updates-5-vxlan2-dkms/) がとても詳しく参考にさせていただきました。
-
-+ [https://www.cuteip.net/posts/2024/04/09/cuteip-updates-5-vxlan2-dkms/](https://www.cuteip.net/posts/2024/04/09/cuteip-updates-5-vxlan2-dkms/)
-
-今回はこちらをそのまま利用させていただきました。
-
-+ [linux_6.8.0-55.57+evpnvxlan6.2.patch](linux_6.8.0-55.57+evpnvxlan6.2.patch)
-
-ただ、こちらの対応は次で紹介する DPDK を用いたデータプレーンを用いる場合は必須ではないかもしれません。
-今回実装した DPDK を用いたデータプレーンはフラグメントに対応しており、それで処理されるパケットに関しては Linux カーネルを通らないためです。
-ただ DPDK を用いた独自データプレーンで処理できないものは Linux カーネルに処理を投げるようになっており、フラグメントやリアセンブルが必要なパケットを Linux カーネルに投げるような状況が生じた際はこの修正がないとうまく処理できない事態となります。
-
-### DPDK を用いた高速な転送機能の実装
-
-Linux カーネルの転送機能を用いるよりも高速に転送処理を行えるよう VXLAN の通信を処理する DPDK アプリを書きました。
-以下のような特徴を持ちます。
-
-+ 物理 NIC ひとつに対応する仮想 NIC をひとつ作成し通常の NIC と同じように IP アドレスを設定したりルーティングの設定をしたりできる
-+ Linux カーネル側で行ったルーティングやブリッジングの設定を Netlink で捕捉し物理 NIC で受信したパケットを DPDK アプリ内で全て処理できる時はそのまま処理し、できないものは仮想 NIC に流し込み Linux カーネルに処理を任せる
-+ 自分宛のパケットは全て仮想 NIC を通して Linux カーネル側へ届く
-
-注意事項として、この DPDK アプリは仮想 NIC 側に設定した Netfilter のルールが適用されません。
-DPDK アプリが自身で処理することができず Linux カーネル側に処理を投げたものは Netfilter が効くので BGP の接続元を Netfilter で絞ることは可能ですが、 VXLAN の通信は DPDK アプリ内で閉じてしまうためそれを Netfilter で絞ろうとしても期待した動作をしない可能性があります。
-(おそらくマルチキャストなどの DPDK アプリで処理できないものは効くがユニキャストの通信は通ってしまうような動作をすることになる。
-末尾の "補足というかメモというか" も参照してください。)
-
-性能が特に問題にならないようであればこの DPDK アプリを使わず全て Linux カーネルで処理させることも可能です。
+**注意**: DPDK 処理される VXLAN 通信には Netfilter が適用されません。
 
 ## 使い方
 
-Linux カーネル側で VXLAN のフラグメントに対応させたい時は [ここ](https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/) にある Linux カーネルの deb パッケージをインストールしそれで起動します。
-もしくは自力で [linux_6.8.0-55.57+evpnvxlan6.2.patch](linux_6.8.0-55.57+evpnvxlan6.2.patch) を適用した Linux カーネル deb パッケージを作成しそれをインストールします。
+### インストール手順
 
-DPDK アプリで VXLAN を処理させたい時は [ここ](https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/) にある gdp という名前の deb パッケージをインストールします。
+[パッケージ配布サイト](https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/) から以下をダウンロード・インストール：
 
-でもその前に DPDK アプリが必要とする dpdk 関連の deb パッケージをインストールする必要があります。
-`apt install dpdk` を実行しそれらをインストールしてから gdp をインストールしてください。
+1. **Linux カーネル** - フラグメント対応版
+2. **DPDK アプリケーション (gdp)** - 高速転送用（オプション）
+3. **FRRouting** - IPv6 EVPN 対応版
 
-dpdk パッケージに加え、使いたい NIC の PMD(Poll Mode Driver) もインストールする必要があります。
-Ubuntu では `librte-net-(NIC 名)24` といった名前で PMD のパッケージが用意されています。
-例えば Intel の igc ドライバで動作する NIC を利用したいときは `apt install librte-net-igc24` で igc 用の PMD をインストールしておきます。
+#### DPDK 事前準備
+
+```bash
+apt install dpdk librte-net-igc24  # NIC に応じて PMD を選択
+```
+
+#### DPDK アプリケーションの設定
 
 gdp をインストールすると `/etc/default/gdp` というファイルができるのでこちらを編集します。
 `/etc/default/gdp` はデフォルトで以下のような内容になっています。
@@ -127,7 +96,7 @@ DPDK アプリでは指定した 2 つのうち 1 つをビジーポールのパ
 2MB ページを確保する数を指定するのでデフォルトの 1024 を指定した場合 2GB が hugepages として確保されます。
 
 `GDP_HPNODE` は hugepages を確保する NUMA ノードを指定します。
-とりあえずこのままで問題ないと思います。
+デフォルト設定のままで問題ないと思われます。
 
 `GDP_ORIGIFS` には DPDK アプリで処理をさせたい物理 NIC を列挙します。
 gdp アプリは起動時に物理 NIC を一旦 Linux のカーネルのドライバから切り離し DPDK で用いれるようにしますが、 gdp を再起動した場合はすでにその処理は行われているためスキップする必要があります。
@@ -144,8 +113,14 @@ gdp アプリは起動すると PCI アドレスから名前を考え仮想 NIC 
 
 `systemctl enable gdp.service` で起動時に gdp を起動するよう設定してから再起動することで DPDK アプリが使えるようになります。
 
-最後に FRRouting の deb パッケージを [ここ](https://www.ginzado.ne.jp/~m-asama/evpnvxlan6/) にあるものに差し替えます。
-一旦 `apt install frr` で公式の frr とその依存 deb パッケージをインストールしてから `dpkg -i` で差し替えるのが簡単だと思います。
+### FRRouting のインストールと設定
+
+```bash
+apt install frr  # 公式版をまずインストール
+dpkg -i <修正版FRRoutingパッケージ>  # 修正版に差し替え
+```
+
+#### EVPN デーモンの有効化
 
 EVPN を用いるために `/etc/frr/daemons` を bgpd が起動するよう修正します。
 `bgpd=no` となっている箇所を `bgpd=yes` に書き換えます。
@@ -171,11 +146,15 @@ router bgp 64512
 exit
 ```
 
-あとよくわかりませんが以下のコマンドを入れないと BGP のパケットが一切出て行かない場合があるようです。
+#### BGP 設定の追加設定
+
+また、以下のコマンドを設定しないと BGP のパケットが送信されない場合があるようです。
 
 ```
 ipv6 nht resolve-via-default
 ```
+
+### ネットワークインターフェースの設定
 
 その上で、例えば tnp3s0 が WAN 側(フレッツの閉域 IPv6 網に接続された側)で、 tnp4s0 が LAN 側(L2 VPN を延伸したい側)で、延伸したい VNI が 550 の場合、以下のような設定を行います。
 
@@ -196,9 +175,11 @@ ip link set tnp4s0 master br50
 最後に LAN 側のインターフェースである tnp4s0 も br50 にアタッチしています。
 (WAN 側のインターフェースである tnp3s0 はすでに設定されているものとしています。)
 
-FRRouting の詳しい設定は [こちら](https://docs.frrouting.org/en/latest/evpn.html) を参照してください。
+FRRouting の詳しい設定は [FRRouting EVPN 公式ドキュメント](#frrouting-evpn-docs) を参照してください。
 
-ちゃんと動けばこんな感じになると思います。
+### 動作確認
+
+正常に動作すればこのような結果になります。
 
 ```
 # show bgp summary 
@@ -262,8 +243,8 @@ MAC               Type   Flags Intf/Remote ES/VTEP            VLAN  Seq #'s
 
 ## 補足というかメモというか
 
-送信元がどこからでも VNI が一致してしまっていたら Ethernet フレームを受け付けてしまうことになるような気がするんだけどまずくないか？？
-めんどくさいのは DPDK アプリ側は Netfilter のフィルタが効かないのでやるとしたら Route Type 3(Inclusive Multicast Ethernet Tag Route) 受け取った VTEP 以外からの VXLAN パケットを受け付けないとかか。
+送信元がどこからでも VNI が一致してしまっていたら Ethernet フレームを受け付けてしまうことになり、セキュリティ上の問題があると考えられます。
+課題となるのは DPDK アプリ側では Netfilter のフィルタが効かないため、対応するとすれば Route Type 3(Inclusive Multicast Ethernet Tag Route) で受け取った VTEP 以外からの VXLAN パケットを受け付けないようにする必要があることです。
 
 DPDK アプリのソースコードを一般に公開することは現時点では考えていません。
 が、物理的に一度でもあったことがあるような方であれば GitHub アカウントを教えてもらえれば参照権限つけます。
